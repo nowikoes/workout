@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>Workout Routine</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #1a1a1a;
+      --text: #e0e0e0;
+      --accent: #ffffff;
+      --text-muted: #666;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    #app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 52px;
+      background: var(--bg);
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--accent);
+    }
+
+    #today-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Day tabs ── */
+    #day-tabs {
+      position: fixed;
+      top: 52px;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      height: 48px;
+      background: var(--bg);
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .day-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      min-height: 48px;
+      transition: color 0.15s, border-bottom 0.15s;
+      border-bottom: 2px solid transparent;
+    }
+
+    .day-tab.active {
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .day-tab:hover {
+      color: var(--text);
+    }
+
+    /* ── CSS custom properties for layout heights ── */
+    :root {
+      --header-h: 52px;
+      --tab-h: 48px;
+      --bottom-h: 64px;
+    }
+
+    /* ── Main content ── */
+    #main-content {
+      margin-top: calc(var(--header-h) + var(--tab-h) + env(safe-area-inset-top, 0px));
+      margin-bottom: calc(var(--bottom-h) + env(safe-area-inset-bottom, 0px));
+      padding: 12px 16px 24px;
+    }
+
+    #main-content.no-daytabs {
+      margin-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+    }
+
+    /* ── Section heading ── */
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin: 20px 0 10px;
+    }
+
+    .section-title:first-child {
+      margin-top: 4px;
+    }
+
+    /* ── Exercise card ── */
+    .exercise-card {
+      background: var(--surface);
+      border-radius: 12px;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.2s;
+    }
+
+    .exercise-card.done {
+      opacity: 0.35;
+    }
+
+    .check-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #444;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .exercise-card.done .check-circle {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .check-icon {
+      display: none;
+      width: 14px;
+      height: 14px;
+    }
+
+    .exercise-card.done .check-icon {
+      display: block;
+    }
+
+    .check-icon::before {
+      content: '';
+      display: block;
+      width: 14px;
+      height: 14px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2 7l3.5 3.5L12 4' stroke='%230d0d0d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") no-repeat center/contain;
+    }
+
+    .card-info {
+      flex: 1;
+    }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .card-sets {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* ── Rest activity card ── */
+    .rest-card {
+      background: var(--surface);
+      border-radius: 12px;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .rest-icon {
+      font-size: 20px;
+      margin-right: 14px;
+    }
+
+    /* ── Diet card ── */
+    .diet-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+
+    .diet-time {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .diet-items {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ── Goals card ── */
+    .goal-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+
+    .goal-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .goal-value {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .goal-value ul {
+      padding-left: 18px;
+    }
+
+    .goal-value li {
+      margin-bottom: 2px;
+    }
+
+    .goal-highlight {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Bottom nav ── */
+    #bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 64px;
+      background: var(--surface);
+      border-top: 1px solid #222;
+      display: flex;
+      align-items: stretch;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .nav-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 48px;
+      transition: color 0.15s;
+    }
+
+    .nav-btn .nav-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .nav-btn.active {
+      color: var(--accent);
+    }
+
+    .nav-btn:hover {
+      color: var(--text);
+    }
+
+    /* ── Muscle badge ── */
+    .muscle-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      background: #222;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ── Progress bar ── */
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar-bg {
+      flex: 1;
+      height: 4px;
+      background: #222;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    .progress-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      min-width: 36px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <header id="app-header">
+    <span class="app-title">WORKOUT</span>
+    <span id="today-label"></span>
+  </header>
+
+  <nav id="day-tabs">
+    <button class="day-tab" data-day="mon">월</button>
+    <button class="day-tab" data-day="tue">화</button>
+    <button class="day-tab" data-day="wed">수</button>
+    <button class="day-tab" data-day="thu">목</button>
+    <button class="day-tab" data-day="fri">금</button>
+    <button class="day-tab" data-day="rest">휴식</button>
+  </nav>
+
+  <main id="main-content"></main>
+
+  <nav id="bottom-nav">
+    <button class="nav-btn active" data-view="routine">
+      <span class="nav-icon">🏋️</span>
+      <span>루틴</span>
+    </button>
+    <button class="nav-btn" data-view="diet">
+      <span class="nav-icon">🥗</span>
+      <span>식단</span>
+    </button>
+    <button class="nav-btn" data-view="goals">
+      <span class="nav-icon">🎯</span>
+      <span>목표</span>
+    </button>
+  </nav>
+
+  <script>
+    // ─── Data ───────────────────────────────────────────────
+    const ROUTINE = {
+      mon: {
+        label: '월', muscle: '가슴',
+        exercises: [
+          { name: '벤치프레스',               sets: '3–4세트 × 8–12회' },
+          { name: '인클라인 벤치프레스',       sets: '3–4세트 × 8–12회' },
+          { name: '덤벨 플라이 / 케이블 크로스', sets: '3–4세트 × 8–12회' },
+          { name: '푸쉬업 (마무리 펌핑)',       sets: '3세트 × 15회' },
+        ]
+      },
+      tue: {
+        label: '화', muscle: '등',
+        exercises: [
+          { name: '풀업 / 랫 풀다운',   sets: '3–4세트 × 8–12회' },
+          { name: '바벨 / 덤벨 로우',   sets: '3–4세트 × 8–12회' },
+          { name: '시티드 로우',         sets: '3–4세트 × 8–12회' },
+          { name: '하이퍼익스텐션',      sets: '3세트 × 15회' },
+        ]
+      },
+      wed: {
+        label: '수', muscle: '어깨',
+        exercises: [
+          { name: '덤벨 숄더프레스',      sets: '3–4세트 × 8–12회' },
+          { name: '사이드 레터럴 레이즈', sets: '3–4세트 × 8–12회' },
+          { name: '프론트 레이즈',        sets: '3–4세트 × 8–12회' },
+          { name: '리어 델트 플라이',     sets: '3–4세트 × 8–12회' },
+        ]
+      },
+      thu: {
+        label: '목', muscle: '팔',
+        exercises: [
+          { name: '바벨 컬',           sets: '3세트 × 8–12회' },
+          { name: '덤벨 컬',           sets: '3세트 × 8–12회' },
+          { name: '해머 컬',           sets: '3세트 × 8–12회' },
+          { name: '케이블 푸쉬다운',   sets: '3세트 × 8–12회' },
+          { name: '스컬크러셔',        sets: '3세트 × 8–12회' },
+          { name: '오버헤드 익스텐션', sets: '3세트 × 8–12회' },
+        ]
+      },
+      fri: {
+        label: '금', muscle: '하체',
+        exercises: [
+          { name: '스쿼트',        sets: '3–4세트 × 8–12회' },
+          { name: '런지',          sets: '3–4세트 × 8–12회' },
+          { name: '레그프레스',    sets: '3–4세트 × 8–12회' },
+          { name: '레그컬',        sets: '3세트 × 8–12회' },
+          { name: '레그익스텐션',  sets: '3세트 × 8–12회' },
+          { name: '카프 레이즈',   sets: '3세트 × 15회' },
+        ]
+      },
+      rest: {
+        label: '휴식', muscle: null,
+        activities: [
+          '가벼운 조깅 또는 걷기',
+          '스트레칭 / 폼롤러',
+          '요가 또는 명상',
+        ]
+      }
+    };
+
+    const CORE = [
+      { name: '플랭크',          sets: '3세트 × 15–30초' },
+      { name: '사이드 플랭크',   sets: '3세트 × 15–30초 (양쪽)' },
+      { name: 'V업',             sets: '3세트 × 15회' },
+      { name: '리버스 크런치',   sets: '3세트 × 15회' },
+      { name: '버피',            sets: '주 2–3회, 웨이트 후 10–15분' },
+      { name: '마운틴 클라이머', sets: '주 2–3회, 웨이트 후 10–15분' },
+    ];
+
+    const DIET = [
+      { time: '아침',      items: '달걀 (흰자+노른자), 오트밀 또는 현미밥, 과일 (바나나 등)' },
+      { time: '오전 간식', items: '프로틴 쉐이크 + 견과류' },
+      { time: '점심',      items: '닭가슴살 또는 생선 + 현미밥·고구마 + 채소' },
+      { time: '운동 전',   items: '바나나 + 프로틴바 또는 쉐이크' },
+      { time: '운동 후',   items: '프로틴 쉐이크 + 바나나' },
+      { time: '저녁',      items: '저지방 단백질 + 퀴노아·현미·파스타 + 샐러드' },
+    ];
+
+    // ─── State ──────────────────────────────────────────────
+    const DAY_MAP = ['rest', 'mon', 'tue', 'wed', 'thu', 'fri', 'rest'];
+    let currentDay = 'mon';
+    let currentView = 'routine';
+
+    // ─── Helpers ────────────────────────────────────────────
+    function getTodayKey() {
+      return DAY_MAP[new Date().getDay()];
+    }
+
+    function getDayName(key) {
+      const names = {
+        mon: '월요일', tue: '화요일', wed: '수요일',
+        thu: '목요일', fri: '금요일', rest: '휴식일'
+      };
+      return names[key] ?? '';
+    }
+
+    function makeCheckCircle() {
+      return `<div class="check-circle"><span class="check-icon"></span></div>`;
+    }
+
+    // ─── Progress bar ────────────────────────────────────────
+    function updateProgress(container) {
+      const cards = container.querySelectorAll('.exercise-card[data-idx]');
+      const total = cards.length;
+      if (total === 0) return;
+      const done = container.querySelectorAll('.exercise-card[data-idx].done').length;
+      const fill = container.querySelector('.progress-bar-fill');
+      const count = container.querySelector('.progress-count');
+      if (fill) fill.style.width = (done / total * 100) + '%';
+      if (count) count.textContent = done + '/' + total;
+    }
+
+    // ─── Routine view ────────────────────────────────────────
+    function renderRoutineView(dayKey) {
+      const day = ROUTINE[dayKey];
+      if (!day) return;
+      const main = document.getElementById('main-content');
+
+      if (dayKey === 'rest') {
+        const icons = ['🚶', '🧘', '🧘'];
+        let html = '<div class="section-title">액티브 레스트</div>';
+        (day.activities ?? []).forEach((act, i) => {
+          html += `
+            <div class="rest-card">
+              <span class="rest-icon">${icons[i] || '✨'}</span>
+              <span>${act}</span>
+            </div>`;
+        });
+        main.innerHTML = html;
+        return;
+      }
+
+      // Weight day
+      const totalCards = day.exercises.length + CORE.length;
+      let html = `
+        <div class="section-title">
+          ${day.muscle} 운동
+          <span class="muscle-badge">${day.muscle}</span>
+        </div>
+        <div class="progress-row">
+          <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+          <div class="progress-count">0/${totalCards}</div>
+        </div>`;
+
+      day.exercises.forEach((ex, i) => {
+        html += `
+          <div class="exercise-card" data-idx="${i}" data-section="main">
+            ${makeCheckCircle()}
+            <div class="card-info">
+              <div class="card-name">${ex.name}</div>
+              <div class="card-sets">${ex.sets}</div>
+            </div>
+          </div>`;
+      });
+
+      html += '<div class="section-title">코어 & 유산소</div>';
+      CORE.forEach((ex, i) => {
+        html += `
+          <div class="exercise-card" data-idx="${i}" data-section="core">
+            ${makeCheckCircle()}
+            <div class="card-info">
+              <div class="card-name">${ex.name}</div>
+              <div class="card-sets">${ex.sets}</div>
+            </div>
+          </div>`;
+      });
+
+      main.innerHTML = html;
+    }
+
+    // ─── Diet view ───────────────────────────────────────────
+    function renderDietView() {
+      const main = document.getElementById('main-content');
+      let html = '<div class="section-title">식사 타이밍</div>';
+
+      DIET.forEach(d => {
+        html += `
+          <div class="diet-card">
+            <div class="diet-time">${d.time}</div>
+            <div class="diet-items">${d.items}</div>
+          </div>`;
+      });
+
+      html += '<div class="section-title">영양 목표</div>';
+      html += `
+        <div class="goal-card">
+          <div class="goal-label">단백질 목표</div>
+          <div class="goal-value">체중(kg) × <span class="goal-highlight">1.6–2.2g</span> / 일 — 매 끼니에 고르게 분배</div>
+        </div>
+        <div class="goal-card">
+          <div class="goal-label">수분 섭취</div>
+          <div class="goal-value">하루 <span class="goal-highlight">2.5–3L</span> — 운동 중 추가 보충</div>
+        </div>`;
+
+      main.innerHTML = html;
+    }
+
+    // ─── Goals view ──────────────────────────────────────────
+    function renderGoalsView() {
+      const main = document.getElementById('main-content');
+      let html = '<div class="section-title">목표 설정</div>';
+
+      const goals = [
+        {
+          label: '기간',
+          value: '<span class="goal-highlight">12주 프로그램</span>'
+        },
+        {
+          label: '체형 목표',
+          value: '근육량 증가 + 체지방 감소 (린 벌크 또는 리컴프)'
+        },
+        {
+          label: '감량 페이스',
+          value: '주 <span class="goal-highlight">0.5–1kg</span> 이내 — 근손실 최소화'
+        },
+        {
+          label: '코어 & 유산소',
+          value: '<ul><li>코어 운동: 매 웨이트 세션 후</li><li>유산소: 주 2–3회, 20–30분</li><li>버피·마운틴 클라이머로 HIIT 대체 가능</li></ul>'
+        },
+        {
+          label: '피해야 할 것',
+          value: '<ul><li>초가공식품 / 트랜스지방</li><li>과도한 설탕 음료</li><li>수면 6시간 미만</li><li>과음 (주 1회 이내 권장)</li></ul>'
+        },
+        {
+          label: '수면 & 회복',
+          value: '매일 <span class="goal-highlight">7–9시간</span> 수면 — 성장 호르몬 분비 최대화'
+        },
+      ];
+
+      goals.forEach(g => {
+        html += `
+          <div class="goal-card">
+            <div class="goal-label">${g.label}</div>
+            <div class="goal-value">${g.value}</div>
+          </div>`;
+      });
+
+      main.innerHTML = html;
+    }
+
+    // ─── Toggle done ─────────────────────────────────────────
+    function toggleDone(card) {
+      card.classList.toggle('done');
+      // Update progress bar
+      const main = document.getElementById('main-content');
+      updateProgress(main);
+    }
+
+    // ─── Switch day ──────────────────────────────────────────
+    function switchDay(dayKey) {
+      currentDay = dayKey;
+      document.querySelectorAll('.day-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.day === dayKey);
+      });
+      if (currentView === 'routine') {
+        renderRoutineView(dayKey);
+      }
+    }
+
+    // ─── Switch view ─────────────────────────────────────────
+    function switchView(viewKey) {
+      currentView = viewKey;
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === viewKey);
+      });
+
+      // Show / hide day tabs
+      const dayTabs = document.getElementById('day-tabs');
+      const main = document.getElementById('main-content');
+
+      if (viewKey === 'routine') {
+        dayTabs.style.display = 'flex';
+        main.classList.remove('no-daytabs');
+        renderRoutineView(currentDay);
+      } else {
+        dayTabs.style.display = 'none';
+        main.classList.add('no-daytabs');
+        if (viewKey === 'diet') renderDietView();
+        else if (viewKey === 'goals') renderGoalsView();
+      }
+    }
+
+    // ─── Init ────────────────────────────────────────────────
+    function init() {
+      const todayKey = getTodayKey();
+
+      // Today label in header
+      document.getElementById('today-label').textContent = getDayName(todayKey) + ' 루틴';
+
+      // Day tab click (event delegation)
+      document.getElementById('day-tabs').addEventListener('click', e => {
+        const btn = e.target.closest('.day-tab');
+        if (btn) switchDay(btn.dataset.day);
+      });
+
+      // Bottom nav click (event delegation)
+      document.getElementById('bottom-nav').addEventListener('click', e => {
+        const btn = e.target.closest('.nav-btn');
+        if (btn) switchView(btn.dataset.view);
+      });
+
+      // Exercise card click (event delegation on main)
+      document.getElementById('main-content').addEventListener('click', e => {
+        const card = e.target.closest('.exercise-card');
+        if (card) toggleDone(card);
+      });
+
+      // Auto-focus today
+      switchDay(todayKey);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
