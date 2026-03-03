@@ -75,8 +75,8 @@
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
       min-height: 48px;
       transition: color 0.15s, border-bottom 0.15s;
@@ -371,12 +371,9 @@
   </header>
 
   <nav id="day-tabs">
-    <button class="day-tab" data-day="mon">월</button>
-    <button class="day-tab" data-day="tue">화</button>
-    <button class="day-tab" data-day="wed">수</button>
-    <button class="day-tab" data-day="thu">목</button>
-    <button class="day-tab" data-day="fri">금</button>
-    <button class="day-tab" data-day="rest">휴식</button>
+    <button class="day-tab" data-day="dayA">Day A</button>
+    <button class="day-tab" data-day="dayB">Day B</button>
+    <button class="day-tab" data-day="dayC">Day C</button>
   </nav>
 
   <main id="main-content"></main>
@@ -399,72 +396,46 @@
   <script>
     // ─── Data ───────────────────────────────────────────────
     const ROUTINE = {
-      mon: {
-        label: '월', muscle: '가슴',
+      dayA: {
+        label: 'Day A', muscle: '가슴 · 어깨 · 삼두',
+        note: '머신·케이블 위주 — 30분',
         exercises: [
-          { name: '벤치프레스',               sets: '3–4세트 × 8–12회' },
-          { name: '인클라인 벤치프레스',       sets: '3–4세트 × 8–12회' },
-          { name: '덤벨 플라이 / 케이블 크로스', sets: '3–4세트 × 8–12회' },
-          { name: '푸쉬업 (마무리 펌핑)',       sets: '3세트 × 15회' },
+          { name: '머신 체스트프레스',          sets: '3세트 × 10–12회' },
+          { name: '케이블 플라이 (펙덱 머신)',   sets: '3세트 × 12–15회' },
+          { name: '머신 숄더프레스',             sets: '3세트 × 10–12회' },
+          { name: '케이블 레터럴 레이즈',        sets: '3세트 × 15회' },
+          { name: '케이블 트라이셉스 푸쉬다운', sets: '3세트 × 12–15회' },
+          { name: '푸쉬업 (마무리)',             sets: '2세트 × 최대' },
         ]
       },
-      tue: {
-        label: '화', muscle: '등',
+      dayB: {
+        label: 'Day B', muscle: '등 · 이두 · 후면어깨',
+        note: '케이블·랫머신 위주 — 30분',
         exercises: [
-          { name: '풀업 / 랫 풀다운',   sets: '3–4세트 × 8–12회' },
-          { name: '바벨 / 덤벨 로우',   sets: '3–4세트 × 8–12회' },
-          { name: '시티드 로우',         sets: '3–4세트 × 8–12회' },
-          { name: '하이퍼익스텐션',      sets: '3세트 × 15회' },
+          { name: '랫 풀다운',              sets: '3세트 × 10–12회' },
+          { name: '케이블 시티드 로우',      sets: '3세트 × 10–12회' },
+          { name: '케이블 페이스 풀',        sets: '3세트 × 15회' },
+          { name: '케이블 바이셉스 컬',      sets: '3세트 × 12–15회' },
+          { name: '케이블 해머 컬',          sets: '3세트 × 12회' },
         ]
       },
-      wed: {
-        label: '수', muscle: '어깨',
+      dayC: {
+        label: 'Day C', muscle: '하체',
+        note: '레그머신 위주 — 30분',
         exercises: [
-          { name: '덤벨 숄더프레스',      sets: '3–4세트 × 8–12회' },
-          { name: '사이드 레터럴 레이즈', sets: '3–4세트 × 8–12회' },
-          { name: '프론트 레이즈',        sets: '3–4세트 × 8–12회' },
-          { name: '리어 델트 플라이',     sets: '3–4세트 × 8–12회' },
+          { name: '레그프레스',   sets: '4세트 × 12회' },
+          { name: '레그익스텐션', sets: '3세트 × 12–15회' },
+          { name: '레그컬',       sets: '3세트 × 12–15회' },
+          { name: '힙 어덕터',    sets: '3세트 × 15회' },
+          { name: '카프레이즈 (머신)', sets: '3세트 × 20회' },
         ]
       },
-      thu: {
-        label: '목', muscle: '팔',
-        exercises: [
-          { name: '바벨 컬',           sets: '3세트 × 8–12회' },
-          { name: '덤벨 컬',           sets: '3세트 × 8–12회' },
-          { name: '해머 컬',           sets: '3세트 × 8–12회' },
-          { name: '케이블 푸쉬다운',   sets: '3세트 × 8–12회' },
-          { name: '스컬크러셔',        sets: '3세트 × 8–12회' },
-          { name: '오버헤드 익스텐션', sets: '3세트 × 8–12회' },
-        ]
-      },
-      fri: {
-        label: '금', muscle: '하체',
-        exercises: [
-          { name: '스쿼트',        sets: '3–4세트 × 8–12회' },
-          { name: '런지',          sets: '3–4세트 × 8–12회' },
-          { name: '레그프레스',    sets: '3–4세트 × 8–12회' },
-          { name: '레그컬',        sets: '3세트 × 8–12회' },
-          { name: '레그익스텐션',  sets: '3세트 × 8–12회' },
-          { name: '카프 레이즈',   sets: '3세트 × 15회' },
-        ]
-      },
-      rest: {
-        label: '휴식', muscle: null,
-        activities: [
-          '가벼운 조깅 또는 걷기',
-          '스트레칭 / 폼롤러',
-          '요가 또는 명상',
-        ]
-      }
     };
 
     const CORE = [
-      { name: '플랭크',          sets: '3세트 × 15–30초' },
-      { name: '사이드 플랭크',   sets: '3세트 × 15–30초 (양쪽)' },
-      { name: 'V업',             sets: '3세트 × 15회' },
-      { name: '리버스 크런치',   sets: '3세트 × 15회' },
-      { name: '버피',            sets: '주 2–3회, 웨이트 후 10–15분' },
-      { name: '마운틴 클라이머', sets: '주 2–3회, 웨이트 후 10–15분' },
+      { name: '플랭크',        sets: '2세트 × 30–45초' },
+      { name: '리버스 크런치', sets: '2세트 × 15회' },
+      { name: '데드버그',      sets: '2세트 × 10회 (양쪽)' },
     ];
 
     const DIET = [
@@ -477,20 +448,20 @@
     ];
 
     // ─── State ──────────────────────────────────────────────
-    const DAY_MAP = ['rest', 'mon', 'tue', 'wed', 'thu', 'fri', 'rest'];
-    let currentDay = 'mon';
+    // 0=일 1=월 2=화 3=수 4=목 5=금 6=토
+    const DAY_MAP = [null, 'dayA', null, 'dayB', null, 'dayC', null];
+    let currentDay = 'dayA';
     let currentView = 'routine';
 
     // ─── Helpers ────────────────────────────────────────────
     function getTodayKey() {
-      return DAY_MAP[new Date().getDay()];
+      return DAY_MAP[new Date().getDay()] ?? 'dayA';
     }
 
     function getDayName(key) {
-      const names = {
-        mon: '월요일', tue: '화요일', wed: '수요일',
-        thu: '목요일', fri: '금요일', rest: '휴식일'
-      };
+      const names = { dayA: 'Day A', dayB: 'Day B', dayC: 'Day C' };
+      const today = DAY_MAP[new Date().getDay()];
+      if (today === key) return '오늘 · ' + (names[key] ?? '');
       return names[key] ?? '';
     }
 
@@ -534,8 +505,8 @@
       const totalCards = day.exercises.length + CORE.length;
       let html = `
         <div class="section-title">
-          ${day.muscle} 운동
-          <span class="muscle-badge">${day.muscle}</span>
+          ${day.muscle}
+          <span class="muscle-badge">${day.note}</span>
         </div>
         <div class="progress-row">
           <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
@@ -602,28 +573,28 @@
 
       const goals = [
         {
-          label: '기간',
-          value: '<span class="goal-highlight">12주 프로그램</span>'
+          label: '현재 신체',
+          value: '<span class="goal-highlight">176cm · 84kg · 38세</span> — BMI 27.2 (과체중 경계)'
         },
         {
-          label: '체형 목표',
-          value: '근육량 증가 + 체지방 감소 (린 벌크 또는 리컴프)'
+          label: '목표 체중',
+          value: '약 <span class="goal-highlight">76–78kg</span> (체지방 감량 + 근육 유지)'
         },
         {
-          label: '감량 페이스',
-          value: '주 <span class="goal-highlight">0.5–1kg</span> 이내 — 근손실 최소화'
+          label: '운동 스케줄',
+          value: '<span class="goal-highlight">주 3회</span> · 점심 30분 · 머신·케이블·맨몸 위주'
         },
         {
-          label: '코어 & 유산소',
-          value: '<ul><li>코어 운동: 매 웨이트 세션 후</li><li>유산소: 주 2–3회, 20–30분</li><li>버피·마운틴 클라이머로 HIIT 대체 가능</li></ul>'
+          label: '단백질 목표',
+          value: '하루 <span class="goal-highlight">130–170g</span> (체중 × 1.6–2.0g)'
         },
         {
           label: '피해야 할 것',
-          value: '<ul><li>초가공식품 / 트랜스지방</li><li>과도한 설탕 음료</li><li>수면 6시간 미만</li><li>과음 (주 1회 이내 권장)</li></ul>'
+          value: '<ul><li>초가공식품 / 설탕 음료</li><li>술</li><li>수면 6시간 미만</li></ul>'
         },
         {
           label: '수면 & 회복',
-          value: '매일 <span class="goal-highlight">7–9시간</span> 수면 — 성장 호르몬 분비 최대화'
+          value: '매일 <span class="goal-highlight">7–8시간</span> — 38세 이후 회복이 핵심'
         },
       ];
 
@@ -685,7 +656,8 @@
       const todayKey = getTodayKey();
 
       // Today label in header
-      document.getElementById('today-label').textContent = getDayName(todayKey) + ' 루틴';
+      const isWorkoutDay = DAY_MAP[new Date().getDay()] !== null;
+      document.getElementById('today-label').textContent = isWorkoutDay ? '오늘 운동 🔥' : '오늘 휴식';
 
       // Day tab click (event delegation)
       document.getElementById('day-tabs').addEventListener('click', e => {
