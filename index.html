@@ -361,6 +361,87 @@
       min-width: 36px;
       text-align: right;
     }
+
+    /* ── Info button ── */
+    .info-btn {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1.5px solid #444;
+      background: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .info-btn:active { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .modal-sheet {
+      width: 100%;
+      background: #1e1e1e;
+      border-radius: 16px 16px 0 0;
+      padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .modal-title { font-size: 17px; font-weight: 700; color: var(--accent); }
+    .modal-close {
+      background: none; border: none;
+      color: var(--text-muted); font-size: 18px;
+      cursor: pointer; padding: 4px 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .modal-tips { margin-bottom: 20px; }
+    .modal-tip-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .modal-tip-item:last-child { border-bottom: none; }
+    .tip-dot { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+    .modal-yt-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #c00;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
 <body>
@@ -393,6 +474,18 @@
     </button>
   </nav>
 
+  <!-- Exercise Info Modal -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+    <div id="modal-sheet" class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span id="modal-title" class="modal-title"></span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div id="modal-tips" class="modal-tips"></div>
+      <a id="modal-yt" class="modal-yt-btn" target="_blank" rel="noopener">▶ YouTube에서 보기</a>
+    </div>
+  </div>
+
   <script>
     // ─── Data ───────────────────────────────────────────────
     const ROUTINE = {
@@ -400,42 +493,99 @@
         label: 'Day A', muscle: '가슴 · 어깨 · 삼두',
         note: '머신·케이블 위주 — 30분',
         exercises: [
-          { name: '머신 체스트프레스',          sets: '3세트 × 10–12회' },
-          { name: '케이블 플라이 (펙덱 머신)',   sets: '3세트 × 12–15회' },
-          { name: '머신 숄더프레스',             sets: '3세트 × 10–12회' },
-          { name: '케이블 레터럴 레이즈',        sets: '3세트 × 15회' },
-          { name: '케이블 트라이셉스 푸쉬다운', sets: '3세트 × 12–15회' },
-          { name: '푸쉬업 (마무리)',             sets: '2세트 × 최대' },
+          { name: '머신 체스트프레스',
+            sets: '3세트 × 10–12회',
+            tip: '등 고정 · 팔꿈치 45도 · 가슴으로 밀기',
+            yt: 'https://www.youtube.com/results?search_query=머신+체스트프레스+자세' },
+          { name: '케이블 플라이 (펙덱 머신)',
+            sets: '3세트 × 12–15회',
+            tip: '양팔 호를 그리며 · 가슴 모으기 · 반동 금지',
+            yt: 'https://www.youtube.com/results?search_query=케이블+플라이+폼' },
+          { name: '머신 숄더프레스',
+            sets: '3세트 × 10–12회',
+            tip: '시선 정면 · 팔꿈치 90도 시작 · 완전 신전 금지',
+            yt: 'https://www.youtube.com/results?search_query=머신+숄더프레스+자세' },
+          { name: '케이블 레터럴 레이즈',
+            sets: '3세트 × 15회',
+            tip: '팔꿈치 살짝 구부림 · 어깨 높이까지 · 몸통 고정',
+            yt: 'https://www.youtube.com/results?search_query=케이블+레터럴+레이즈+자세' },
+          { name: '케이블 트라이셉스 푸쉬다운',
+            sets: '3세트 × 12–15회',
+            tip: '팔꿈치 고정 · 완전 신전 · 천천히 복귀',
+            yt: 'https://www.youtube.com/results?search_query=케이블+트라이셉스+푸쉬다운+자세' },
+          { name: '푸쉬업 (마무리)',
+            sets: '2세트 × 최대',
+            tip: '몸 일직선 · 팔꿈치 45도 · 가슴 터치',
+            yt: 'https://www.youtube.com/results?search_query=푸쉬업+올바른+자세' },
         ]
       },
       dayB: {
         label: 'Day B', muscle: '등 · 이두 · 후면어깨',
         note: '케이블·랫머신 위주 — 30분',
         exercises: [
-          { name: '랫 풀다운',              sets: '3세트 × 10–12회' },
-          { name: '케이블 시티드 로우',      sets: '3세트 × 10–12회' },
-          { name: '케이블 페이스 풀',        sets: '3세트 × 15회' },
-          { name: '케이블 바이셉스 컬',      sets: '3세트 × 12–15회' },
-          { name: '케이블 해머 컬',          sets: '3세트 × 12회' },
+          { name: '랫 풀다운',
+            sets: '3세트 × 10–12회',
+            tip: '그립 어깨너비 · 가슴까지 당기기 · 반동 금지',
+            yt: 'https://www.youtube.com/results?search_query=랫풀다운+자세' },
+          { name: '케이블 시티드 로우',
+            sets: '3세트 × 10–12회',
+            tip: '허리 직립 · 팔꿈치 옆구리로 · 완전 신전',
+            yt: 'https://www.youtube.com/results?search_query=케이블+시티드+로우+자세' },
+          { name: '케이블 페이스 풀',
+            sets: '3세트 × 15회',
+            tip: '눈높이로 당기기 · 양팔 벌리기 · 외회전',
+            yt: 'https://www.youtube.com/results?search_query=케이블+페이스풀+자세' },
+          { name: '케이블 바이셉스 컬',
+            sets: '3세트 × 12–15회',
+            tip: '팔꿈치 고정 · 완전 수축 · 천천히 내리기',
+            yt: 'https://www.youtube.com/results?search_query=케이블+바이셉스+컬+자세' },
+          { name: '케이블 해머 컬',
+            sets: '3세트 × 12회',
+            tip: '손바닥 마주보게 · 팔꿈치 고정 · 완전 수축',
+            yt: 'https://www.youtube.com/results?search_query=해머컬+자세' },
         ]
       },
       dayC: {
         label: 'Day C', muscle: '하체',
         note: '레그머신 위주 — 30분',
         exercises: [
-          { name: '레그프레스',   sets: '4세트 × 12회' },
-          { name: '레그익스텐션', sets: '3세트 × 12–15회' },
-          { name: '레그컬',       sets: '3세트 × 12–15회' },
-          { name: '힙 어덕터',    sets: '3세트 × 15회' },
-          { name: '카프레이즈 (머신)', sets: '3세트 × 20회' },
+          { name: '레그프레스',
+            sets: '4세트 × 12회',
+            tip: '발 어깨너비 · 무릎 발끝 방향 · 완전 신전 금지',
+            yt: 'https://www.youtube.com/results?search_query=레그프레스+자세' },
+          { name: '레그익스텐션',
+            sets: '3세트 × 12–15회',
+            tip: '천천히 내리기 · 완전 수축 · 발목 고정',
+            yt: 'https://www.youtube.com/results?search_query=레그익스텐션+자세' },
+          { name: '레그컬',
+            sets: '3세트 × 12–15회',
+            tip: '엉덩이 들리지 않게 · 완전 수축 · 천천히',
+            yt: 'https://www.youtube.com/results?search_query=레그컬+자세' },
+          { name: '힙 어덕터',
+            sets: '3세트 × 15회',
+            tip: '천천히 열기 · 수축 유지 1초 · 반동 금지',
+            yt: 'https://www.youtube.com/results?search_query=힙+어덕터+자세' },
+          { name: '카프레이즈 (머신)',
+            sets: '3세트 × 20회',
+            tip: '완전 신전 · 수축 1초 유지 · 발뒤꿈치 최대 내리기',
+            yt: 'https://www.youtube.com/results?search_query=카프레이즈+자세' },
         ]
       },
     };
 
     const CORE = [
-      { name: '플랭크',        sets: '2세트 × 30–45초' },
-      { name: '리버스 크런치', sets: '2세트 × 15회' },
-      { name: '데드버그',      sets: '2세트 × 10회 (양쪽)' },
+      { name: '플랭크',
+        sets: '2세트 × 30–45초',
+        tip: '몸 일직선 · 엉덩이 올리지 않기 · 복압 유지',
+        yt: 'https://www.youtube.com/results?search_query=플랭크+자세' },
+      { name: '리버스 크런치',
+        sets: '2세트 × 15회',
+        tip: '허리로 바닥 누르기 · 천천히 내리기 · 반동 금지',
+        yt: 'https://www.youtube.com/results?search_query=리버스+크런치+자세' },
+      { name: '데드버그',
+        sets: '2세트 × 10회 (양쪽)',
+        tip: '허리 바닥 고정 · 팔다리 교차 · 천천히',
+        yt: 'https://www.youtube.com/results?search_query=데드버그+운동+자세' },
     ];
 
     const DIET = [
@@ -467,6 +617,12 @@
 
     function makeCheckCircle() {
       return `<div class="check-circle"><span class="check-icon"></span></div>`;
+    }
+
+    function makeInfoBtn(ex) {
+      if (!ex.tip) return '';
+      const data = encodeURIComponent(JSON.stringify({ name: ex.name, tip: ex.tip, yt: ex.yt || '' }));
+      return `<button class="info-btn" data-info="${data}" onclick="openModal(this)">ⓘ</button>`;
     }
 
     // ─── Progress bar ────────────────────────────────────────
@@ -521,6 +677,7 @@
               <div class="card-name">${ex.name}</div>
               <div class="card-sets">${ex.sets}</div>
             </div>
+            ${makeInfoBtn(ex)}
           </div>`;
       });
 
@@ -533,6 +690,7 @@
               <div class="card-name">${ex.name}</div>
               <div class="card-sets">${ex.sets}</div>
             </div>
+            ${makeInfoBtn(ex)}
           </div>`;
       });
 
@@ -609,6 +767,26 @@
       main.innerHTML = html;
     }
 
+    // ─── Modal ───────────────────────────────────────────────
+    function openModal(btn) {
+      const info = JSON.parse(decodeURIComponent(btn.dataset.info));
+      document.getElementById('modal-title').textContent = info.name;
+      const tips = info.tip.split('·').map(t => t.trim()).filter(Boolean);
+      document.getElementById('modal-tips').innerHTML = tips.map(t =>
+        `<div class="modal-tip-item"><span class="tip-dot">•</span><span>${t}</span></div>`
+      ).join('');
+      const ytBtn = document.getElementById('modal-yt');
+      if (info.yt) { ytBtn.href = info.yt; ytBtn.style.display = 'block'; }
+      else { ytBtn.style.display = 'none'; }
+      document.getElementById('modal-overlay').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
     // ─── Toggle done ─────────────────────────────────────────
     function toggleDone(card) {
       card.classList.toggle('done');
@@ -619,6 +797,7 @@
 
     // ─── Switch day ──────────────────────────────────────────
     function switchDay(dayKey) {
+      closeModal();
       currentDay = dayKey;
       document.querySelectorAll('.day-tab').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.day === dayKey);
@@ -630,6 +809,7 @@
 
     // ─── Switch view ─────────────────────────────────────────
     function switchView(viewKey) {
+      closeModal();
       currentView = viewKey;
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === viewKey);
@@ -673,8 +853,13 @@
 
       // Exercise card click (event delegation on main)
       document.getElementById('main-content').addEventListener('click', e => {
+        if (e.target.closest('.info-btn')) return;
         const card = e.target.closest('.exercise-card');
         if (card) toggleDone(card);
+      });
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
       });
 
       // Auto-focus today
